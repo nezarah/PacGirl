@@ -130,13 +130,51 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
+    "Search the node that has the lowest combined cost and heuristic first."
     "*** YOUR CODE HERE ***"
-    cost = lambda aPath: problem.getCostOfActions([x[1] for x in aPath]) + heuristic(aPath[len(aPath)-1][0], problem)
-    frontier = util.PriorityQueueWithFunction(cost)
-    return graphSearch(problem, frontier)
-
-
+    path = {}   #for path retrieve
+    F={}
+    visited={}  #closed list
+    priorityQ = util.PriorityQueue()
+    V=problem.getStartState()
+    path[V]=(None,None)
+    F[V]=heuristic(V,problem)
+    priorityQ.push(V,F[V])
+    open={V:True}
+    while not priorityQ.isEmpty():
+        V=priorityQ.pop()
+        visited[V]=True
+        open[V]=False
+        if problem.isGoalState(V):  #Goal & retrieve path
+            result=[]
+            traversal=V
+            while path[traversal][0]!=None:
+                result.append(path[traversal][1])
+                traversal=path[traversal][0]
+            result.reverse()
+            return result
+        for W in problem.getSuccessors(V):
+            F_W=F[V]-heuristic(V,problem)+heuristic(W[0],problem)+1
+            if visited.get(W[0],False):
+                if F[W[0]]>F_W :
+                    path[W[0]]=(V,W[1])
+                    F[W[0]]=F_W
+                    priorityQ.push(W[0],F_W)
+                    visited[W[0]]=False
+                    open[W[0]]=True
+            else:
+                if open.get(W[0],False):
+                    if F[W[0]] > F_W :
+                        path[W[0]]=(V,W[1])
+                        F[W[0]]=F_W
+                        priorityQ.push(W[0],F_W)
+                        open[W[0]]=True
+                else:
+                    F[W[0]]=F_W
+                    path[W[0]]=(V,W[1])
+                    priorityQ.push(W[0],F_W)
+                    open[W[0]]=True
+    return None
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
