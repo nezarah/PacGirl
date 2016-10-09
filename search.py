@@ -118,9 +118,24 @@ def breadthFirstSearch(problem):
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    fringe.push( (problem.getStartState(), []), 0)
+    explored = []
+
+    while not fringe.isEmpty():
+        node, actions = fringe.pop()
+
+        if problem.isGoalState(node):
+            return actions
+
+        explored.append(node)
+
+        for coord, direction, steps in problem.getSuccessors(node):
+            if not coord in explored:
+                new_actions = actions + [direction]
+                fringe.push((coord, new_actions), problem.getCostOfActions(new_actions))
+
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -129,53 +144,29 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
-    "Search the node that has the lowest combined cost and heuristic first."
-    "*** YOUR CODE HERE ***"
-    path = {}   #for path retrieve
-    F={}
-    visited={}  #closed list
-    priorityQ = util.PriorityQueue()
-    V=problem.getStartState()
-    path[V]=(None,None)
-    F[V]=heuristic(V,problem)
-    priorityQ.push(V,F[V])
-    open={V:True}
-    while not priorityQ.isEmpty():
-        V=priorityQ.pop()
-        visited[V]=True
-        open[V]=False
-        if problem.isGoalState(V):  #Goal & retrieve path
-            result=[]
-            traversal=V
-            while path[traversal][0]!=None:
-                result.append(path[traversal][1])
-                traversal=path[traversal][0]
-            result.reverse()
-            return result
-        for W in problem.getSuccessors(V):
-            F_W=F[V]-heuristic(V,problem)+heuristic(W[0],problem)+1
-            if visited.get(W[0],False):
-                if F[W[0]]>F_W :
-                    path[W[0]]=(V,W[1])
-                    F[W[0]]=F_W
-                    priorityQ.push(W[0],F_W)
-                    visited[W[0]]=False
-                    open[W[0]]=True
-            else:
-                if open.get(W[0],False):
-                    if F[W[0]] > F_W :
-                        path[W[0]]=(V,W[1])
-                        F[W[0]]=F_W
-                        priorityQ.push(W[0],F_W)
-                        open[W[0]]=True
-                else:
-                    F[W[0]]=F_W
-                    path[W[0]]=(V,W[1])
-                    priorityQ.push(W[0],F_W)
-                    open[W[0]]=True
-    return None
-# Abbreviations
+    closedset = []
+    fringe = util.PriorityQueue()
+    start = problem.getStartState()
+    fringe.push( (start, []), heuristic(start, problem))
+
+    while not fringe.isEmpty():
+        node, actions = fringe.pop()
+
+        if problem.isGoalState(node):
+            return actions
+
+        closedset.append(node)
+
+        for coord, direction, cost in problem.getSuccessors(node):
+            if not coord in closedset:
+                new_actions = actions + [direction]
+                score = problem.getCostOfActions(new_actions) + heuristic(coord, problem)
+                fringe.push( (coord, new_actions), score)
+
+    return []
+    # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
